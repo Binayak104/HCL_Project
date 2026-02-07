@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+mangum
+boto3
+chromadb
+python-multipart
+pytest
+httpx

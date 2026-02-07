@@ -3,7 +3,7 @@ uvicorn
 pydantic
 mangum
 boto3
-chromadb
+chromadb-client
 python-multipart
 pytest
 httpx

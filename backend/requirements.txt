@@ -7,3 +7,4 @@ chromadb-client
 python-multipart
 pytest
 httpx
+numpy<2.0

@@ -18,30 +18,56 @@ provider "aws" {
   region = var.aws_region
 }
 
-# --- VPC / Network (Using Default for Simplicity) ---
-data "aws_vpc" "default" {
-  default = true
+# --- VPC / Network ---
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  tags = {
+    Name = "hcl-project-vpc"
+  }
 }
 
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "${var.aws_region}a"
+  tags = {
+    Name = "hcl-project-public-subnet"
   }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
 }
 
 # --- Security Group for ChromaDB ---
 resource "aws_security_group" "chroma_sg" {
   name        = "hcl-project-chroma-sg"
   description = "Allow inbound traffic for ChromaDB"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "ChromaDB from Lambda (and public for now)"
+    description = "ChromaDB from Public (Dev/QA)"
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # TODO: Restrict to Lambda IP range or VPC in production
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
@@ -49,7 +75,7 @@ resource "aws_security_group" "chroma_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # TODO: Restrict to User IP
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -66,7 +92,7 @@ resource "aws_instance" "chroma_db" {
   instance_type = "t2.micro"
   key_name      = "key-16-11-2025"
   
-  subnet_id                   = data.aws_subnets.default.ids[0]
+  subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.chroma_sg.id]
   associate_public_ip_address = true
 

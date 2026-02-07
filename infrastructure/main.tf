@@ -6,7 +6,7 @@ terraform {
     }
   }
   backend "s3" {
-    bucket         = "hcl-project-tf-state-REPLACE_WITH_ACTUAL_BUCKET" # User must replace after bootstrap
+    bucket         = "hcl-project-tf-state-20260207093946259100000001"
     key            = "hcl-project/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "hcl-project-tf-locks"

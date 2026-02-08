@@ -16,7 +16,7 @@ COPY requirements.txt .
 # Install python dependencies to a local directory
 RUN pip install --upgrade pip wheel setuptools
 # Allow binary or source install, pip will pick compatible wheels for AL2
-RUN pip install --no-cache-dir --target /build/package -r requirements.txt
+RUN pip install --no-cache-dir --target /build/package --only-binary=:all: -r requirements.txt
 
 # Stage 2: Runtime Stage (AWS Lambda Node)
 FROM public.ecr.aws/lambda/python:3.11

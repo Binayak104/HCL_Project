@@ -135,6 +135,19 @@ resource "aws_apprunner_service" "frontend" {
       }
     }
   }
+
+  health_check_configuration {
+    protocol            = "TCP"
+    interval            = 10
+    timeout             = 20
+    healthy_threshold   = 1
+    unhealthy_threshold = 10
+  }
+
+  instance_configuration {
+    cpu    = "1024"
+    memory = "2048"
+  }
   
   depends_on = [aws_iam_role_policy_attachment.apprunner_policy]
 }

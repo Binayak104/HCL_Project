@@ -6,7 +6,7 @@ terraform {
     }
   }
   backend "s3" {
-    bucket         = "hcl-project-tf-state-20260207141754108600000001"
+    bucket         = "hcl-project-tf-state-20260208050030860200000001"
     key            = "hcl-project/layer1/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "hcl-project-tf-locks"

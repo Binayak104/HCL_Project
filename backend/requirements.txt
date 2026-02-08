@@ -8,4 +8,5 @@ chromadb
 python-multipart
 pytest
 httpx
+pysqlite3-binary
 

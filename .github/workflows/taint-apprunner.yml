@@ -37,4 +37,4 @@ jobs:
 
     - name: Terraform Taint
       working-directory: ./infrastructure/layer2
-      run: terraform taint aws_apprunner_service.frontend
+      run: terraform taint -lock=false aws_apprunner_service.frontend

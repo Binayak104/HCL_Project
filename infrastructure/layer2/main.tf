@@ -74,7 +74,7 @@ resource "aws_lambda_function" "api" {
   role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
   image_uri     = "${data.terraform_remote_state.layer1.outputs.ecr_backend_url}:latest"
-  timeout       = 30
+  timeout       = 60
   memory_size   = 512
 
   environment {

@@ -1,6 +1,12 @@
+import os
+
+# Override sqlite3 for ChromaDB (Lambda has ancient sqlite3)
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 import chromadb
 from chromadb.config import Settings
-import os
 
 class ChromaService:
     def __init__(self):

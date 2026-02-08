@@ -131,13 +131,15 @@ resource "aws_apprunner_service" "frontend" {
         port = "3000"
         runtime_environment_variables = {
             NEXT_PUBLIC_API_URL = aws_apigatewayv2_api.api.api_endpoint
+            HOSTNAME            = "0.0.0.0"
         }
       }
     }
   }
 
   health_check_configuration {
-    protocol            = "TCP"
+    protocol            = "HTTP"
+    path                = "/"
     interval            = 10
     timeout             = 20
     healthy_threshold   = 1

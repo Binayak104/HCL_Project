@@ -1,6 +1,11 @@
 # Trigger Backend Deployment
 from fastapi import FastAPI
 
+# Override sqlite3 for ChromaDB (Lambda has ancient sqlite3)
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 from mangum import Mangum
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api import assessment, override

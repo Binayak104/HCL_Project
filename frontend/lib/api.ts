@@ -19,7 +19,9 @@ export async function submitAssessment(engagementDetails: string): Promise<Asses
     });
 
     if (!response.ok) {
-        throw new Error('Failed to submit assessment');
+        const errorText = await response.text();
+        console.error('API Info:', { status: response.status, body: errorText });
+        throw new Error(`Failed to submit assessment: ${response.status} ${errorText}`);
     }
 
     return response.json();

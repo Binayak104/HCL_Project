@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://whurf4d6si.execute-api.us-east-1.amazonaws.com';
+const API_BASE_URL = '/api';
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface AssessmentResponse {

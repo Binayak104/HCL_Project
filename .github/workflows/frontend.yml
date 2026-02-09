@@ -49,7 +49,7 @@ jobs:
         IMAGE_TAG: latest
       working-directory: ./frontend
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build --build-arg NEXT_PUBLIC_API_URL=http://placeholder-url -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
     
     # App Runner usually auto-deploys if "Auto deploy" is enabled on image push.

@@ -1,36 +1,16 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-  backend "s3" {
-    bucket         = "hcl-project-tf-state-20260208050030860200000001"
-    key            = "hcl-project/layer2/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "hcl-project-tf-locks"
-    encrypt        = true
-  }
-}
-
-provider "aws" {
-  region = var.aws_region
-}
-
 # --- Import Layer 1 State ---
 data "terraform_remote_state" "layer1" {
   backend = "s3"
   config = {
-    bucket = "hcl-project-tf-state-20260208050030860200000001"
-    key    = "hcl-project/layer1/terraform.tfstate"
+    bucket = "hcl-project-tf-state-20260209130725265000000001"
+    key    = var.layer1_state_key
     region = "us-east-1"
   }
 }
 
 # --- IAM Roles ---
 resource "aws_iam_role" "lambda_role" {
-  name = "hcl_project_lambda_role_layer2"
+  name = "hcl_project_lambda_role_layer2_${var.environment}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -52,7 +32,7 @@ resource "aws_iam_role_policy_attachment" "lambda_bedrock" {
 }
 
 resource "aws_iam_role" "apprunner_role" {
-  name = "hcl_project_apprunner_role_layer2"
+  name = "hcl_project_apprunner_role_layer2_${var.environment}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -70,7 +50,7 @@ resource "aws_iam_role_policy_attachment" "apprunner_policy" {
 
 # --- Backend (Lambda + API Gateway) ---
 resource "aws_lambda_function" "api" {
-  function_name = "hcl-project-api"
+  function_name = "hcl-project-api-${var.environment}"
   role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
   image_uri     = "${data.terraform_remote_state.layer1.outputs.ecr_backend_url}:latest"
@@ -86,7 +66,7 @@ resource "aws_lambda_function" "api" {
 }
 
 resource "aws_apigatewayv2_api" "api" {
-  name          = "hcl-project-api"
+  name          = "hcl-project-api-${var.environment}"
   protocol_type = "HTTP"
 }
 
@@ -118,7 +98,7 @@ resource "aws_lambda_permission" "api" {
 
 # --- Frontend (App Runner) ---
 resource "aws_apprunner_service" "frontend" {
-  service_name = "hcl-project-frontend"
+  service_name = "hcl-project-frontend-${var.environment}"
 
   source_configuration {
     authentication_configuration {
@@ -156,5 +136,5 @@ resource "aws_apprunner_service" "frontend" {
 
 # --- S3 Buckets ---
 resource "aws_s3_bucket" "data_bucket" {
-  bucket_prefix = "hcl-project-data-"
+  bucket_prefix = "hcl-project-data-${var.environment}-"
 }

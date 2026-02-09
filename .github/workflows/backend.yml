@@ -1,13 +1,35 @@
 name: Deploy Backend
 
 on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+        - dev
+        - stage
+        - prod
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
+    - name: Set Environment for Push
+      if: github.event_name == 'push'
+      run: echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+
+    - name: Set Environment for Dispatch
+      if: github.event_name == 'workflow_dispatch'
+      run: echo "ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
     
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -23,7 +45,7 @@ jobs:
     - name: Build and push Docker image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: hcl-project-backend
+        ECR_REPOSITORY: hcl-project-backend-${{ env.ENVIRONMENT }}
         IMAGE_TAG: latest
       working-directory: ./backend
       run: |
@@ -32,4 +54,4 @@ jobs:
 
     - name: Update Lambda Code
       run: |
-        aws lambda update-function-code --function-name hcl-project-api --image-uri ${{ steps.login-ecr.outputs.registry }}/hcl-project-backend:latest
+        aws lambda update-function-code --function-name hcl-project-api-${{ env.ENVIRONMENT }} --image-uri ${{ steps.login-ecr.outputs.registry }}/hcl-project-backend-${{ env.ENVIRONMENT }}:latest

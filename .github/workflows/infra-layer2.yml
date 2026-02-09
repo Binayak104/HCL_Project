@@ -18,6 +18,7 @@ on:
         type: choice
         options:
         - dev
+        - stage
         - prod
 
 jobs:
@@ -40,15 +41,15 @@ jobs:
       uses: hashicorp/setup-terraform@v2
 
     - name: Terraform Init
-      working-directory: ./infrastructure/layer2
+      working-directory: ./infrastructure/layer2/${{ inputs.environment }}
       run: terraform init
 
     - name: Terraform Apply
       if: ${{ inputs.action == 'apply' }}
-      working-directory: ./infrastructure/layer2
-      run: terraform apply -auto-approve -var="environment=${{ inputs.environment }}"
+      working-directory: ./infrastructure/layer2/${{ inputs.environment }}
+      run: terraform apply -auto-approve
 
     - name: Terraform Destroy
       if: ${{ inputs.action == 'destroy' }}
-      working-directory: ./infrastructure/layer2
-      run: terraform destroy -auto-approve -var="environment=${{ inputs.environment }}"
+      working-directory: ./infrastructure/layer2/${{ inputs.environment }}
+      run: terraform destroy -auto-approve

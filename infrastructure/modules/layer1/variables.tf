@@ -5,5 +5,10 @@ variable "aws_region" {
 
 variable "environment" {
   description = "Deployment environment"
-  default     = "dev"
+  type        = string
+}
+
+variable "cidr_block" {
+  description = "CIDR block for the subnet"
+  type        = string
 }

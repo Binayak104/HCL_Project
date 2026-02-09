@@ -1,23 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-  backend "s3" {
-    bucket         = "hcl-project-tf-state-20260208050030860200000001"
-    key            = "hcl-project/layer1/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "hcl-project-tf-locks"
-    encrypt        = true
-  }
-}
-
-provider "aws" {
-  region = var.aws_region
-}
-
 # --- Network (Default VPC + Dedicated Subnet) ---
 
 data "aws_vpc" "default" {
@@ -26,17 +6,45 @@ data "aws_vpc" "default" {
 
 resource "aws_subnet" "public" {
   vpc_id                  = data.aws_vpc.default.id
-  cidr_block              = "172.31.100.0/24" # Ensuring a unique range in default VPC (172.31.0.0/16)
+  cidr_block              = var.cidr_block
   map_public_ip_on_launch = true
   availability_zone       = "${var.aws_region}a"
   tags = {
-    Name = "hcl-project-layer1-subnet"
+    Name = "hcl-project-layer1-subnet-${var.environment}"
   }
+}
+
+# --- Internet Gateway ---
+resource "aws_internet_gateway" "main" {
+  vpc_id = data.aws_vpc.default.id
+  tags = {
+    Name = "hcl-project-igw-${var.environment}"
+  }
+}
+
+# --- Route Table ---
+resource "aws_route_table" "public" {
+  vpc_id = data.aws_vpc.default.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    Name = "hcl-project-public-rt-${var.environment}"
+  }
+}
+
+# --- Route Table Association ---
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
 }
 
 # --- Security Group for ChromaDB ---
 resource "aws_security_group" "chroma_sg" {
-  name        = "hcl-project-chroma-sg-layer1"
+  name        = "hcl-project-chroma-sg-layer1-${var.environment}"
   description = "Allow inbound traffic for ChromaDB"
   vpc_id      = data.aws_vpc.default.id
 
@@ -82,21 +90,21 @@ resource "aws_instance" "chroma_db" {
               usermod -a -G docker ec2-user
               
               # Run ChromaDB
-              docker run -d -p 8000:8000 --name chroma_server chromadb/chroma:latest
+              docker run -d -p 8000:8000 --name chroma_server chromadb/chroma:0.5.20
               EOF
 
   tags = {
-    Name = "hcl-project-chromadb"
+    Name = "hcl-project-chromadb-${var.environment}"
   }
 }
 
 # --- ECR Repositories ---
 resource "aws_ecr_repository" "backend" {
-  name = "hcl-project-backend"
+  name = "hcl-project-backend-${var.environment}"
   force_delete = true
 }
 
 resource "aws_ecr_repository" "frontend" {
-  name = "hcl-project-frontend"
+  name = "hcl-project-frontend-${var.environment}"
   force_delete = true
 }

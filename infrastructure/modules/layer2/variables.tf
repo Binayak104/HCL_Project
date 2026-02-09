@@ -5,5 +5,10 @@ variable "aws_region" {
 
 variable "environment" {
   description = "Deployment environment"
-  default     = "dev"
+  type        = string
+}
+
+variable "layer1_state_key" {
+  description = "Key for Layer 1 remote state"
+  type        = string
 }

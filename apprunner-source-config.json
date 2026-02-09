@@ -1,0 +1,16 @@
+{
+    "ImageRepository": {
+        "ImageIdentifier": "412381744166.dkr.ecr.us-east-1.amazonaws.com/hcl-project-frontend:latest",
+        "ImageRepositoryType": "ECR",
+        "ImageConfiguration": {
+            "RuntimeEnvironmentVariables": {
+                "FORCE_DEPLOY": "1",
+                "NEXT_PUBLIC_API_URL": "https://whurf4d6si.execute-api.us-east-1.amazonaws.com",
+                "HOSTNAME": "0.0.0.0",
+                "PORT": "3000"
+            },
+            "Port": "3000"
+        }
+    },
+    "AutoDeploymentsEnabled": false
+}

@@ -2,9 +2,12 @@
 import urllib.request
 import json
 import time
+import sys
+import time
 
 def verify_chroma():
-    url = "http://localhost:8000/api/v1/heartbeat"
+    host = sys.argv[1] if len(sys.argv) > 1 else "localhost"
+    url = f"http://{host}:8000/api/v1/heartbeat"
     print(f"Checking ChromaDB at {url}...")
     
     max_retries = 5

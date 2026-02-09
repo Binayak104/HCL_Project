@@ -39,10 +39,12 @@ class BedrockService:
         })
 
         try:
+            print(f"Invoking Bedrock model: {self.model_id}")
             response = self.client.invoke_model(
                 modelId=self.model_id,
                 body=body
             )
+            print("Bedrock invocation successful")
             response_body = json.loads(response['body'].read())
             # Nova/Claude 3 format usually has content[0].text
             # Adjust parsing based on specific model response structure

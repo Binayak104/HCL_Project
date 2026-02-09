@@ -11,6 +11,7 @@ chroma_service = ChromaService()
 
 @router.post("/assess", response_model=AssessmentResponse)
 async def create_assessment(request: AssessmentRequest):
+    print(f"Received assessment request: {request.engagement_details[:50]}...")
     # 1. Generate assessment using Bedrock
     assessment_result = bedrock_service.classify_risk(request.engagement_details)
     

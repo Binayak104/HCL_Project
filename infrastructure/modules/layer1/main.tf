@@ -10,7 +10,17 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
   availability_zone       = "${var.aws_region}a"
   tags = {
-    Name = "hcl-project-layer1-subnet-${var.environment}"
+    Name = "hcl-project-layer1-subnet-a-${var.environment}"
+  }
+}
+
+resource "aws_subnet" "public_b" {
+  vpc_id                  = data.aws_vpc.default.id
+  cidr_block              = var.cidr_block_b
+  map_public_ip_on_launch = true
+  availability_zone       = "${var.aws_region}b"
+  tags = {
+    Name = "hcl-project-layer1-subnet-b-${var.environment}"
   }
 }
 

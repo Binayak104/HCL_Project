@@ -2,7 +2,7 @@
 data "terraform_remote_state" "layer1" {
   backend = "s3"
   config = {
-    bucket = "hcl-project-tf-state-20260209130725265000000001"
+    bucket = "hcl-project-tf-state-20260219115130774700000001"
     key    = var.layer1_state_key
     region = "us-east-1"
   }

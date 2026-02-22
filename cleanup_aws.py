@@ -31,8 +31,10 @@ def delete_dynamodb_table(table_name):
             print(f"Error deleting table {table_name}: {e}")
 
 if __name__ == "__main__":
-    bucket_name = "hcl-project-tf-state-20260209130725265000000001"
-    table_name = "hcl-project-tf-locks"
+    # --- Remote State Configuration ---
+    BUCKET_NAME = "hcl-project-tf-state-20260219115130774700000001"
+    DYNAMODB_TABLE = "hcl-project-tf-locks"
+    REGION = "us-east-1"
     
-    empty_and_delete_bucket(bucket_name)
-    delete_dynamodb_table(table_name)
+    empty_and_delete_bucket(BUCKET_NAME)
+    delete_dynamodb_table(DYNAMODB_TABLE)

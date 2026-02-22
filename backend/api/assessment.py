@@ -1,13 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from backend.models.schemas import AssessmentRequest, AssessmentResponse
 from backend.services.bedrock_service import BedrockService
-from backend.services.chroma_service import ChromaService
+from backend.services.pgvector_service import pgvector_service
 from uuid import uuid4
 from datetime import datetime
 
 router = APIRouter()
 bedrock_service = BedrockService()
-chroma_service = ChromaService()
 
 @router.post("/assess", response_model=AssessmentResponse)
 async def create_assessment(request: AssessmentRequest):
@@ -15,13 +14,17 @@ async def create_assessment(request: AssessmentRequest):
     # 1. Generate assessment using Bedrock
     assessment_result = bedrock_service.classify_risk(request.engagement_details)
     
+    # 2. Generate embedding for RAG
+    embedding = bedrock_service.embed_text(request.engagement_details)
+    
     assessment_id = str(uuid4())
     
-    # 2. Store in ChromaDB for RAG/History
+    # 3. Store in RDS/pgvector for RAG/History
     try:
-        chroma_service.add_document(
+        pgvector_service.add_document(
             doc_id=assessment_id,
             text=request.engagement_details,
+            embedding=embedding,
             metadata={
                 "risk_score": assessment_result.get("risk_score", "Unknown"),
                 "triage": assessment_result.get("triage_determination", "Unknown"),
@@ -29,7 +32,7 @@ async def create_assessment(request: AssessmentRequest):
             }
         )
     except Exception as e:
-        print(f"Warning: Failed to store in ChromaDB: {e}")
+        print(f"Warning: Failed to store in RDS: {e}")
 
     return AssessmentResponse(
         id=assessment_id,

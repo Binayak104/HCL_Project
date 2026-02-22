@@ -59,8 +59,11 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      CHROMA_HOST = data.terraform_remote_state.layer1.outputs.chroma_db_ip
-      CHROMA_PORT = "8000"
+      DB_HOST = split(":", data.terraform_remote_state.layer1.outputs.db_endpoint)[0]
+      DB_PORT = "5432"
+      DB_NAME = data.terraform_remote_state.layer1.outputs.db_name
+      DB_USER = data.terraform_remote_state.layer1.outputs.db_username
+      DB_PASS = data.terraform_remote_state.layer1.outputs.db_password
     }
   }
 }

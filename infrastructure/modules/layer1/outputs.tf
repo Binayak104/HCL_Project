@@ -6,12 +6,21 @@ output "subnet_id" {
   value = aws_subnet.public.id
 }
 
-output "chroma_db_ip" {
-  value = aws_instance.chroma_db.public_ip
+output "db_endpoint" {
+  value = aws_db_instance.postgres.endpoint
 }
 
-output "chroma_sg_id" {
-  value = aws_security_group.chroma_sg.id
+output "db_name" {
+  value = aws_db_instance.postgres.db_name
+}
+
+output "db_username" {
+  value = aws_db_instance.postgres.username
+}
+
+output "db_password" {
+  value = aws_db_instance.postgres.password
+  sensitive = true
 }
 
 output "ecr_backend_url" {

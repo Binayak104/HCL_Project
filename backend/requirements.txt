@@ -4,9 +4,8 @@ uvicorn
 pydantic
 mangum
 boto3
-chromadb==0.5.20
+psycopg2-binary
+pgvector
 python-multipart
 pytest
 httpx
-pysqlite3-binary
-

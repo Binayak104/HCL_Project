@@ -6,8 +6,8 @@ terraform {
     }
   }
   backend "s3" {
-    bucket         = "hcl-project-tf-state-20260209130725265000000001"
-    key            = "hcl-project/layer2/dev/terraform.tfstate"
+    bucket         = "hcl-project-tf-state-20260219115130774700000001"
+    key            = "hcl-project/layer2/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "hcl-project-tf-locks"
     encrypt        = true
@@ -19,9 +19,9 @@ provider "aws" {
 }
 
 module "layer2" {
-  source           = "../../modules/layer2"
-  environment      = "dev"
-  layer1_state_key = "hcl-project/layer1/dev/terraform.tfstate"
+  source           = "../modules/layer2"
+  environment      = "main"
+  layer1_state_key = "hcl-project/layer1/terraform.tfstate"
 }
 
 output "api_endpoint" {

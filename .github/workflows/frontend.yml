@@ -6,30 +6,15 @@ on:
     paths:
       - 'frontend/**'
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment'
-        required: true
-        default: 'dev'
-        type: choice
-        options:
-        - dev
-        - stage
-        - prod
+
+env:
+  ENVIRONMENT: main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Set Environment for Push
-      if: github.event_name == 'push'
-      run: echo "ENVIRONMENT=dev" >> $GITHUB_ENV
-
-    - name: Set Environment for Dispatch
-      if: github.event_name == 'workflow_dispatch'
-      run: echo "ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1

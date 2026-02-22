@@ -1,0 +1,17 @@
+frontend - app runner
+backend - lambda
+ChromaDB in Ec2
+
+Git
+GitHub
+Terraform
+
+ECR 
+
+//Workflows
+
+frontend image
+backend image
+infra 1 (ChromaDB , ECR)
+infra 2 (App Runner, Lambda)
+

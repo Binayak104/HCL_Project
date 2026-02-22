@@ -11,8 +11,8 @@ graph TD
     User[User Browser] -->|HTTPS| Frontend[Frontend (AWS App Runner)]
     Frontend -->|API Calls (Next.js)| APIGw[API Gateway HTTP API]
     APIGw -->|Proxy Integration| Lambda[Backend (AWS Lambda)]
-    Lambda -->|Vector Search (HTTP)| Chroma[ChromaDB (EC2 t2.micro)]
-    Lambda -->|GenAI (Boto3)| Bedrock[AWS Bedrock (Nova Model)]
+    Lambda -->|SQL + Vector (TCP/5432)| RDS[RDS PostgreSQL (pgvector)]
+    Lambda -->|GenAI (Boto3)| Bedrock[AWS Bedrock (Amazon Models)]
     Lambda -->|Store Logs/Docs| S3[S3 Bucket]
     Terraform[Terraform State] -->|Locking| DynamoDB[DynamoDB Table]
 ```
@@ -30,8 +30,8 @@ graph TD
     *   **Tech Stack**: Python 3.11, FastAPI, Mangum (ASGI adapter).
 
 3.  **Data Layer**:
-    *   **Vector Database**: **ChromaDB** running in a Docker container on an **EC2 Instance** (t2.micro).
-        *   *Note*: Used EC2 because ChromaDB is stateful and Lambda is ephemeral.
+    *   **Vector Database**: **RDS PostgreSQL** with the **pgvector** extension.
+        *   *Note*: Replaced ChromaDB with RDS for production-grade reliability, managed backups, and seamless integration with SQL.
     *   **Object Storage**: **AWS S3** for storing document uploads and logs.
 
 4.  **GenAI**:
@@ -46,10 +46,10 @@ graph TD
 HCL_Project/
 ├── backend/                  # FastAPI Application
 │   ├── api/                  # Route handlers (assessment.py, health.py)
-│   ├── services/             # Business logic (bedrock_service.py, chroma_service.py)
+│   ├── services/             # Business logic (bedrock_service.py, pgvector_service.py)
 │   ├── models/               # Pydantic data models
 │   ├── Dockerfile            # Instructions to build Lambda-compatible container
-│   ├── requirements.txt      # Python dependencies (fastapi, mangum, chromadb-client)
+│   ├── requirements.txt      # Python dependencies (fastapi, psycopg2, pgvector)
 │   └── main.py               # Application entry point
 │
 ├── frontend/                 # Next.js Application

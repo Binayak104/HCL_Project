@@ -1,4 +1,4 @@
-terraform {
+﻿terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -6,8 +6,8 @@ terraform {
     }
   }
   backend "s3" {
-    bucket         = "hcl-project-tf-state-20260209130725265000000001"
-    key            = "hcl-project/layer1/prod/terraform.tfstate"
+    bucket         = "hcl-project-tf-state-20260219115130774700000001"
+    key            = "hcl-project/layer1/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "hcl-project-tf-locks"
     encrypt        = true
@@ -19,8 +19,8 @@ provider "aws" {
 }
 
 module "layer1" {
-  source      = "../../modules/layer1"
-  environment = "prod"
+  source      = "../modules/layer1"
+  environment = "main"
   cidr_block  = "172.31.200.0/24"
 }
 

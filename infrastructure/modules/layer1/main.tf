@@ -42,26 +42,19 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# --- Security Group for ChromaDB ---
-resource "aws_security_group" "chroma_sg" {
-  name        = "hcl-project-chroma-sg-layer1-${var.environment}"
-  description = "Allow inbound traffic for ChromaDB"
+# --- Security Group for RDS ---
+resource "aws_security_group" "rds_sg" {
+  name        = "hcl-project-rds-sg-layer1-${var.environment}"
+  description = "Allow inbound traffic for RDS PostgreSQL"
   vpc_id      = data.aws_vpc.default.id
 
+  # Allow access from within the VPC (e.g. Lambda, EC2)
   ingress {
-    description = "ChromaDB from Public"
-    from_port   = 8000
-    to_port     = 8000
+    description = "PostgreSQL from VPC"
+    from_port   = 5432
+    to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "SSH access"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [data.aws_vpc.default.cidr_block]
   }
 
   egress {
@@ -72,29 +65,42 @@ resource "aws_security_group" "chroma_sg" {
   }
 }
 
-# --- EC2 Instance for ChromaDB ---
-resource "aws_instance" "chroma_db" {
-  ami           = "ami-0ebfd941bbafe70c6" # Amazon Linux 2023 AMI in us-east-1
-  instance_type = "t2.micro"
-  key_name      = "key-16-11-2025"
-  
-  subnet_id                   = aws_subnet.public.id
-  vpc_security_group_ids      = [aws_security_group.chroma_sg.id]
-  associate_public_ip_address = true
-
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y docker
-              service docker start
-              usermod -a -G docker ec2-user
-              
-              # Run ChromaDB
-              docker run -d -p 8000:8000 --name chroma_server chromadb/chroma:0.5.20
-              EOF
+# --- RDS Subnet Group ---
+resource "aws_db_subnet_group" "main" {
+  name       = "hcl-project-rds-subnet-group-${var.environment}"
+  subnet_ids = [aws_subnet.public.id, data.aws_subnet.default_b.id] # RDS needs at least 2 AZs
 
   tags = {
-    Name = "hcl-project-chromadb-${var.environment}"
+    Name = "hcl-project-rds-subnet-group-${var.environment}"
+  }
+}
+
+# Data source for another default subnet in a different AZ (RDS requirement)
+data "aws_subnet" "default_b" {
+  vpc_id            = data.aws_vpc.default.id
+  availability_zone = "${var.aws_region}b"
+}
+
+# --- RDS PostgreSQL Instance ---
+resource "aws_db_instance" "postgres" {
+  identifier           = "hcl-project-db-${var.environment}"
+  allocated_storage    = 20
+  storage_type         = "gp2"
+  engine               = "postgres"
+  engine_version       = "16" # Latest major version with pgvector support
+  instance_class       = "db.t3.micro"
+  db_name              = var.db_name
+  username             = var.db_username
+  password             = var.db_password
+  parameter_group_name = "default.postgres16"
+  skip_final_snapshot  = true
+  publicly_accessible  = true # Set to true for simplicity in this project, ideally false
+  
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+
+  tags = {
+    Name = "hcl-project-postgres-${var.environment}"
   }
 }
 

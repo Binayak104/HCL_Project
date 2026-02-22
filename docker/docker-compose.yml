@@ -1,17 +1,18 @@
 version: '3.9'
 
 services:
-  chroma:
-    image: chromadb/chroma:latest
-    container_name: chroma_server
+  postgres:
+    image: ankane/pgvector:latest # Pre-built image with pgvector
+    container_name: postgres_vector
     ports:
-      - "8000:8000"
-    volumes:
-      - chroma_data:/chroma/.chroma/index
+      - "5432:5432"
     environment:
-      - IS_PERSISTENT=TRUE
-      - ANONYMIZED_TELEMETRY=False
+      - POSTGRES_DB=vecdb
+      - POSTGRES_USER=dbadmin
+      - POSTGRES_PASSWORD=password123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  chroma_data:
+  postgres_data:
     driver: local

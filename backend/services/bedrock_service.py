@@ -67,4 +67,18 @@ class BedrockService:
                 "explanation": f"Error calling AI model: {str(e)}. Defaulting to manual review."
             }
 
+    def embed_text(self, text: str) -> list:
+        try:
+            body = json.dumps({"inputText": text})
+            response = self.client.invoke_model(
+                modelId="amazon.titan-embed-text-v1",
+                body=body
+            )
+            response_body = json.loads(response['body'].read())
+            return response_body['embedding']
+        except Exception as e:
+            print(f"Error generating embedding: {e}")
+            # Return zero vector fallback
+            return [0.0] * 1536
+
 bedrock_service = BedrockService()

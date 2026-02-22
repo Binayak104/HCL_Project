@@ -27,16 +27,19 @@ data "terraform_remote_state" "layer1" {
   }
 }
 
+data "aws_subnets" "all" {
+  filter {
+    name   = "vpc-id"
+    values = [data.terraform_remote_state.layer1.outputs.vpc_id]
+  }
+}
+
 module "vector" {
   source      = "../modules/vector"
   environment = "main"
   vpc_id      = data.terraform_remote_state.layer1.outputs.vpc_id
-  subnet_ids  = [data.terraform_remote_state.layer1.outputs.subnet_id, data.aws_subnet.default_b.id]
-}
-
-data "aws_subnet" "default_b" {
-  vpc_id            = data.terraform_remote_state.layer1.outputs.vpc_id
-  availability_zone = "us-east-1b"
+  # Use the subnet from Layer 1 PLUS any other subnets found in the VPC to satisfy RDS Multi-AZ requirement
+  subnet_ids  = distinct(concat([data.terraform_remote_state.layer1.outputs.subnet_id], data.aws_subnets.all.ids))
 }
 
 output "db_endpoint" {

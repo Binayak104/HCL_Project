@@ -19,9 +19,10 @@ provider "aws" {
 }
 
 module "layer1" {
-  source      = "../modules/layer1"
-  environment = "main"
-  cidr_block  = "172.31.200.0/24"
+  source       = "../modules/layer1"
+  environment  = "main"
+  cidr_block   = "172.31.200.0/24"
+  cidr_block_b = "172.31.201.0/24"
 }
 
 output "vpc_id" {
@@ -30,6 +31,10 @@ output "vpc_id" {
 
 output "subnet_id" {
   value = module.layer1.subnet_id
+}
+
+output "subnet_id_b" {
+  value = module.layer1.subnet_id_b
 }
 
 output "ecr_backend_url" {

@@ -9,6 +9,11 @@ variable "environment" {
 }
 
 variable "cidr_block" {
-  description = "CIDR block for the subnet"
+  description = "CIDR block for the primary subnet"
+  type        = string
+}
+
+variable "cidr_block_b" {
+  description = "CIDR block for the secondary subnet"
   type        = string
 }

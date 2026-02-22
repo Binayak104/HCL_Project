@@ -6,6 +6,10 @@ output "subnet_id" {
   value = aws_subnet.public.id
 }
 
+output "subnet_id_b" {
+  value = aws_subnet.public_b.id
+}
+
 output "ecr_backend_url" {
   value = aws_ecr_repository.backend.repository_url
 }

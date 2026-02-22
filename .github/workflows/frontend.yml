@@ -1,11 +1,16 @@
 name: Deploy Frontend
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'frontend/**'
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform (deploy/destroy)'
+        required: true
+        default: 'deploy'
+        type: choice
+        options:
+        - deploy
+        - destroy
 
 env:
   ENVIRONMENT: main
@@ -13,6 +18,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.action == 'deploy' }}
     steps:
     - uses: actions/checkout@v3
 
@@ -36,10 +42,10 @@ jobs:
       run: |
         docker build --build-arg NEXT_PUBLIC_API_URL=http://placeholder-url -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-    
-    # App Runner usually auto-deploys if "Auto deploy" is enabled on image push.
-    # Otherwise:
-    # - name: Deploy to App Runner
-    #   run: aws apprunner start-deployment --service-arn <ARN>
 
-    
+  destroy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.action == 'destroy' }}
+    steps:
+    - name: Placeholder for Frontend Teardown
+      run: echo "Frontend teardown is managed via Terraform Infrastructure Layer 2 destroy."

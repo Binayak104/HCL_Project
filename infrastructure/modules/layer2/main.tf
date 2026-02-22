@@ -1,11 +1,15 @@
-# --- Import Layer 1 State ---
-data "terraform_remote_state" "layer1" {
+data "terraform_remote_state" "vector" {
   backend = "s3"
   config = {
     bucket = "hcl-project-tf-state-20260219115130774700000001"
-    key    = var.layer1_state_key
+    key    = var.vector_state_key
     region = "us-east-1"
   }
+}
+
+variable "vector_state_key" {
+  description = "S3 key for Vector layer state"
+  type        = string
 }
 
 # --- IAM Roles ---
@@ -59,11 +63,11 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      DB_HOST = split(":", data.terraform_remote_state.layer1.outputs.db_endpoint)[0]
+      DB_HOST = split(":", data.terraform_remote_state.vector.outputs.db_endpoint)[0]
       DB_PORT = "5432"
-      DB_NAME = data.terraform_remote_state.layer1.outputs.db_name
-      DB_USER = data.terraform_remote_state.layer1.outputs.db_username
-      DB_PASS = data.terraform_remote_state.layer1.outputs.db_password
+      DB_NAME = data.terraform_remote_state.vector.outputs.db_name
+      DB_USER = data.terraform_remote_state.vector.outputs.db_username
+      DB_PASS = data.terraform_remote_state.vector.outputs.db_password
     }
   }
 }

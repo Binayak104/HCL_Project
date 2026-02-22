@@ -22,6 +22,7 @@ module "layer2" {
   source           = "../modules/layer2"
   environment      = "main"
   layer1_state_key = "hcl-project/layer1/terraform.tfstate"
+  vector_state_key = "hcl-project/vector/terraform.tfstate"
 }
 
 output "api_endpoint" {

@@ -1,11 +1,16 @@
 name: Deploy Backend
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'backend/**'
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform (deploy/destroy)'
+        required: true
+        default: 'deploy'
+        type: choice
+        options:
+        - deploy
+        - destroy
 
 env:
   ENVIRONMENT: main
@@ -13,6 +18,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.action == 'deploy' }}
     steps:
     - uses: actions/checkout@v3
     
@@ -40,3 +46,10 @@ jobs:
     - name: Update Lambda Code
       run: |
         aws lambda update-function-code --function-name hcl-project-api-${{ env.ENVIRONMENT }} --image-uri ${{ steps.login-ecr.outputs.registry }}/hcl-project-backend-${{ env.ENVIRONMENT }}:latest
+
+  destroy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.action == 'destroy' }}
+    steps:
+    - name: Placeholder for Backend Teardown
+      run: echo "Backend teardown is managed via Terraform Infrastructure Layer 2 destroy."

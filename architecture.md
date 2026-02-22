@@ -11,32 +11,17 @@ graph TD
     User[User Browser] -->|HTTPS| Frontend[Frontend (AWS App Runner)]
     Frontend -->|API Calls (Next.js)| APIGw[API Gateway HTTP API]
     APIGw -->|Proxy Integration| Lambda[Backend (AWS Lambda)]
-    Lambda -->|SQL + Vector (TCP/5432)| RDS[RDS PostgreSQL (pgvector)]
-    Lambda -->|GenAI (Boto3)| Bedrock[AWS Bedrock (Amazon Models)]
-    Lambda -->|Store Logs/Docs| S3[S3 Bucket]
-    Terraform[Terraform State] -->|Locking| DynamoDB[DynamoDB Table]
+    Lambda -->|SQL + Vector (TCP/5432)| RDS[Vector Layer (RDS PostgreSQL)]
+    Lambda -->|GenAI (Boto3)| Bedrock[AWS Bedrock]
+    RDS -.->|Depends On| L1[Layer 1 (Network)]
+    Lambda -.->|Depends On| RDS
+    Lambda -.->|Depends On| L1
 ```
 
-### Components
-1.  **Frontend (Next.js)**:
-    *   **Hosting**: Deployed on **AWS App Runner** as a Docker container.
-    *   **Why**: App Runner handles auto-scaling, SSL termination, and load balancing automatically.
-    *   **Tech Stack**: Next.js 14, TailwindCSS, TypeScript.
-
-2.  **Backend (FastAPI)**:
-    *   **Hosting**: Deployed on **AWS Lambda** via a container image.
-    *   **Integration**: Exposed via **AWS API Gateway** (HTTP API).
-    *   **Why**: Serverless (pay-per-use), handles intermittent traffic well.
-    *   **Tech Stack**: Python 3.11, FastAPI, Mangum (ASGI adapter).
-
-3.  **Data Layer**:
-    *   **Vector Database**: **RDS PostgreSQL** with the **pgvector** extension.
-        *   *Note*: Replaced ChromaDB with RDS for production-grade reliability, managed backups, and seamless integration with SQL.
-    *   **Object Storage**: **AWS S3** for storing document uploads and logs.
-
-4.  **GenAI**:
-    *   **Model**: AWS Bedrock (Amazon Nova Micro).
-    *   **Use Case**: Risk assessment and triage determination.
+### Deployment Layers
+1.  **Layer 1 (Base)**: VPC, Subnets, Internet Gateway, and ECR Repositories.
+2.  **Vector Layer**: RDS PostgreSQL with the `pgvector` extension. (Depends on Layer 1).
+3.  **Layer 2 (App)**: Lambda (Backend) and App Runner (Frontend). (Depends on Layer 1 and Vector Layer).
 
 ---
 
@@ -60,16 +45,17 @@ HCL_Project/
 │   └── next.config.ts        # Configured for 'output: standalone'
 │
 ├── infrastructure/           # Terraform (IaC)
-│   ├── bootstrap/            # Setup script for S3 State Bucket & DynamoDB Lock
-│   ├── main.tf               # DEFINES ALL AWS RESOURCES (VPC, ECS, Lambda, Roles)
-│   ├── variables.tf          # Configuration variables (region, environment)
-│   └── outputs.tf            # Exports (API URL, Frontend URL)
+│   ├── modules/              # Reusable modules (layer1, vector, layer2)
+│   ├── layer1/               # Base Networking & ECR
+│   ├── vector/               # RDS PostgreSQL (pgvector)
+│   └── layer2/               # App Runner & Lambda
 │
-└── .github/workflows/        # CI/CD Pipelines
-    ├── backend.yml           # Builds Backend Image -> Pushes to ECR -> Updates Lambda
-    ├── frontend.yml          # Builds Frontend Image -> Pushes to ECR
-    ├── terraform.yml         # Runs 'terraform plan' and 'apply'
-    └── destroy.yml           # Automated teardown of all resources
+└── .github/workflows/        # Manual CI/CD Pipelines
+    ├── infra-layer1.yml      # Deploy/Destroy Layer 1
+    ├── infra-vector.yml      # Deploy/Destroy Vector Layer
+    ├── infra-layer2.yml      # Deploy/Destroy Layer 2
+    ├── backend.yml           # Manual Deploy/Destroy Backend Code
+    └── frontend.yml          # Manual Deploy/Destroy Frontend Code
 ```
 
 ---

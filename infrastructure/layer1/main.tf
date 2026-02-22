@@ -28,10 +28,6 @@ output "subnet_id" {
   value = module.layer1.subnet_id
 }
 
-output "chroma_db_ip" {
-  value = module.layer1.chroma_db_ip
-}
-
 output "ecr_backend_url" {
   value = module.layer1.ecr_backend_url
 }

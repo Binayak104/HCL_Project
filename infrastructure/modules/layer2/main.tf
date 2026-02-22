@@ -72,11 +72,11 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      DB_HOST = split(":", data.terraform_remote_state.vector.outputs.db_endpoint)[0]
+      DB_HOST = try(split(":", data.terraform_remote_state.vector.outputs.db_endpoint)[0], "deleted")
       DB_PORT = "5432"
-      DB_NAME = data.terraform_remote_state.vector.outputs.db_name
-      DB_USER = data.terraform_remote_state.vector.outputs.db_username
-      DB_PASS = data.terraform_remote_state.vector.outputs.db_password
+      DB_NAME = try(data.terraform_remote_state.vector.outputs.db_name, "deleted")
+      DB_USER = try(data.terraform_remote_state.vector.outputs.db_username, "deleted")
+      DB_PASS = try(data.terraform_remote_state.vector.outputs.db_password, "deleted")
     }
   }
 }

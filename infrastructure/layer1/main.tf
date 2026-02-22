@@ -24,6 +24,10 @@ module "layer1" {
   cidr_block  = "172.31.200.0/24"
 }
 
+output "vpc_id" {
+  value = module.layer1.vpc_id
+}
+
 output "subnet_id" {
   value = module.layer1.subnet_id
 }

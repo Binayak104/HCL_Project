@@ -132,7 +132,7 @@ resource "aws_apprunner_service" "frontend" {
       image_configuration {
         port = "3000"
         runtime_environment_variables = {
-            NEXT_PUBLIC_API_URL = aws_apigatewayv2_api.api.api_endpoint
+            API_BASE_URL        = aws_apigatewayv2_api.api.api_endpoint
             HOSTNAME            = "0.0.0.0"
         }
       }

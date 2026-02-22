@@ -11,15 +11,6 @@ on:
         options:
         - apply
         - destroy
-      environment:
-        description: 'Environment'
-        required: true
-        default: 'dev'
-        type: choice
-        options:
-        - dev
-        - stage
-        - prod
 
 jobs:
   terraform:
@@ -41,15 +32,15 @@ jobs:
       uses: hashicorp/setup-terraform@v2
 
     - name: Terraform Init
-      working-directory: ./infrastructure/layer2/${{ inputs.environment }}
-      run: terraform init -backend-config="bucket=hcl-project-tf-state-20260219115130774700000001" -backend-config="dynamodb_table=hcl-project-tf-locks" -backend-config="region=us-east-1" -backend-config="key=hcl-project/layer2/${{ inputs.environment }}/terraform.tfstate"
+      working-directory: ./infrastructure/layer2
+      run: terraform init -backend-config="bucket=hcl-project-tf-state-20260219115130774700000001" -backend-config="dynamodb_table=hcl-project-tf-locks" -backend-config="region=us-east-1" -backend-config="key=hcl-project/layer2/terraform.tfstate"
 
     - name: Terraform Apply
-      if: ${{ inputs.action == 'apply' }}
-      working-directory: ./infrastructure/layer2/${{ inputs.environment }}
+      if: ${{ github.event.inputs.action == 'apply' }}
+      working-directory: ./infrastructure/layer2
       run: terraform apply -auto-approve
 
     - name: Terraform Destroy
-      if: ${{ inputs.action == 'destroy' }}
-      working-directory: ./infrastructure/layer2/${{ inputs.environment }}
+      if: ${{ github.event.inputs.action == 'destroy' }}
+      working-directory: ./infrastructure/layer2
       run: terraform destroy -auto-approve

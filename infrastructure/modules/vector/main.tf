@@ -5,11 +5,11 @@ resource "aws_security_group" "rds_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "PostgreSQL from VPC"
+    description = "PostgreSQL public access (required for Lambda outside VPC)"
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.selected.cidr_block]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
